@@ -57,9 +57,20 @@ function getPromiseResult(source) {
  * [Promise.reject(1), Promise.reject(2), Promise.reject(3)]    => Promise rejected
  */
 function getFirstResolvedPromiseResult(promises) {
-  return Promise.race(promises)
-    .then((result) => result)
-    .catch((result) => result);
+  return new Promise((resolve, reject) => {
+    let rejectionCount = 0;
+
+    promises.forEach((promise) => {
+      promise
+        .then((value) => resolve(value))
+        .catch(() => {
+          rejectionCount += 1;
+          if (rejectionCount === promises.length) {
+            reject(new Error('All promises were rejected'));
+          }
+        });
+    });
+  });
 }
 
 /**
